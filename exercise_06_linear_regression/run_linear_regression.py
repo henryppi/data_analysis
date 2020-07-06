@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys,os
 
 print("\t +++  Linear Regression +++ \n")
 # linear 
