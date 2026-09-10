@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 
-from sources.data_analysis_tools import read_file
+from sources.data_analysis_tools import (read_file,
+                                         moving_average,
+                                         iir_low_pass)
 
 
 fn = './data_files/data_20250904_104729.dat'
@@ -10,36 +12,19 @@ fn = './data_files/data_20250904_104729.dat'
 n_lines = 33000
 t,data = read_file(fn,n_lines)
 
-a = 1000
-b = 10000
+data = data[:,2]
 
-mean = np.mean(data[a:b,2])
-std = np.std(data[a:b,2])
-print(mean,std)
+t = t.astype('datetime64[us]').astype(float)/1e6
+t += -t[0]
 
-data[:,2] += -mean
-
-weight_ref = 99.5
-
-c = 14000
-d = 19000
-
-mean2 = np.mean(data[c:d,2])
-print(mean2)
-
-data[:,2] *= weight_ref/mean2
-
-std2 = np.std(data[a:b,2])
-std3 = np.std(data[c:d,2])
-
-print(std2,std3)
-
-n_avg = 240
-weights = np.ones(n_avg)/n_avg
-avg = np.convolve(data[:,2],weights,mode='valid')
+win = 100
+data_avg = moving_average(data,win=win)
 
 
+cutoff_freq = 0.5
+data_low = iir_low_pass(t,data,cutoff_freq)
 
-plt.plot(data[:,2],'.k',markersize=1)
-plt.plot(avg[(n_avg-1):],'-r',lw=2)
+plt.plot(t,data,'-k',markersize=1,lw=0.5)
+plt.plot(t[(win-1):],data_avg,color='r',marker='+',linestyle='None',lw=1,markersize=2)
+plt.plot(t,data_low,'og',lw=2,markersize=2)
 plt.show()

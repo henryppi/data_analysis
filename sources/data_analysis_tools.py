@@ -2,9 +2,6 @@ import numpy as np
 import os,sys
 from datetime import datetime
 
-def read_gpx_file(fn):
-    pass
-
 def read_file(filename,last_n_lines):
     time_format = "%Y-%m-%d %H:%M:%S.%f"
     with open(filename) as f:
@@ -28,3 +25,18 @@ def read_file(filename,last_n_lines):
                 row.append(float(string[col]))
         data.append(row)
     return np.array(t),np.array(data)
+
+def moving_average(data,win=3):
+    return np.convolve(data, np.ones(win), 'valid') / win
+
+def iir_low_pass(t,y,cutoff_freq):
+    n = len(y)
+    dt = np.mean(np.diff(t))
+    rc = 1.0/(2*np.pi*cutoff_freq)
+    alpha = dt /( rc + dt )
+    print('dt = ',dt, ' sample_freq = ',1/dt, ' rc = ',rc, ' alpha = ', alpha)
+    y_filtered = np.zeros(n)
+    y_filtered[0] = y[0]
+    for i in range(1,n):
+        y_filtered[i] = alpha * y[i] + (1-alpha)*y_filtered[i-1]
+    return y_filtered 
