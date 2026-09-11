@@ -29,4 +29,6 @@ class LPD8:
         self.knobs[ind-1] = val
 
     def set_pad(note,OnOff,velo):
-        pass
+        ind=self.pad_map[note]
+        self.padOnOff[ind] = OnOff
+        self.padVelo[ind] = velo
