@@ -12,7 +12,7 @@ class LPD8:
         self.name_midi_controller = name
         print('found device = ',self.name_midi_controller)
         self.port = mido.open_ioport(self.name_midi_controller)
-        # self.map
+        self.pad_map = {36:0,37:1,38:2,39:3,40:4,41:5,42:6,43:7}
 
     def search_lpd8(self,name_midi):
         names = mido.get_ioport_names()
