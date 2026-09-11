@@ -14,7 +14,6 @@ class LPD8:
         self.port = mido.open_ioport(self.name_midi_controller)
 
     def search_lpd8(self,name_midi):
-        
         names = mido.get_ioport_names()
         names = set(n for n in names if name_midi in n)
         assert len(names) == 1
