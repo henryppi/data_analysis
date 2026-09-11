@@ -1,7 +1,10 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+sources/__pycache__/
+
 *.py[codz]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -25,7 +28,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
 
 # Jupyter Notebook
 .ipynb_checkpoints
