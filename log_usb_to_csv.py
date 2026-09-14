@@ -1,7 +1,14 @@
 import serial  # use pip install pyserial NOT the module 'serial' 
 from datetime import datetime, timedelta
 
-# ser = serial.Serial('/dev/tty.usbserial-0001',115200, timeout=1)
+# terminal monitor with screen
+# ls /dev/cu.usbserial-0001
+# screen -L /dev/cu.usbserial-0001 115200
+
+# quit screen 
+# screen -ls
+# screen -X -S <JOB-ID> quit
+
 # ser = serial.Serial('/dev/ttyUSB0',115200) # linux
 ser = serial.Serial('/dev/cu.usbserial-0001',115200) # macos
 # serBT = serial.Serial('/dev/tty.esp32send-ESP32SPP',115200, timeout=1)

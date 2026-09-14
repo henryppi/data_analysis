@@ -2,7 +2,7 @@ import sys, time
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-from sources.data_analysis_tools import read_file
+from sources.data_analysis_tools import read_file,moving_average
 
 
 def main(fn,last_n_lines):
@@ -10,12 +10,13 @@ def main(fn,last_n_lines):
     plt.ion()
     fig, ax = plt.subplots(1, 1, sharex=True)
     t,data = read_file(fn,last_n_lines)
-    line, = ax.plot(t, data[:,2]) 
+    line, = ax.plot(t[4:], data[4:,2]) 
     
     while True:
         t,data = read_file(fn,last_n_lines)
-        line.set_xdata(t)
-        line.set_ydata(data[:,2])
+        line.set_xdata(t[4:])
+        # line.set_ydata(data[:,2])
+        line.set_ydata(moving_average(data[:,2],5))
         ax.set_xlim([t[0],t[-1]])
         ax.set_ylim([np.min(data[:,2])-1,np.max(data[:,2])+1])
         fig.canvas.draw()
