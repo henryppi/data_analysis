@@ -125,15 +125,21 @@ class Monitor:
         self.data = np.zeros([ndata,nrow+1],float)
         self.data[:,0] = np.linspace(0,1,self.ndata)
 
-        self.fig, self.axs = plt.subplots(self.nrow,1,sharex=True,figsize=(8,8),facecolor='w',frameon=False)
-
-        self.axs = self.axs.flatten()
+        if self.nrow>1:
+            self.fig, self.axs = plt.subplots(self.nrow,1,sharex=True,figsize=(8,8),facecolor='w',frameon=False)
+            self.axs = self.axs.flatten()
+        else:
+            self.fig, axs = plt.subplots(self.nrow,1,sharex=True,figsize=(8,8),facecolor='w',frameon=False)
+            self.axs = [axs]
+        
         self.fig.patch.set_facecolor('none') 
+        
         for i,ax in enumerate(self.axs):
             ax.patch.set_facecolor('none')
-        
+            # ax.twinx()
+
         dpi = self.fig.get_dpi()
-        self.fig.set_size_inches(800/dpi,600/dpi)
+        self.fig.set_size_inches(1000/dpi,600/dpi)
         self.fig.canvas.manager.window.move(200, 100)
 
         self.line_list = []
@@ -149,7 +155,7 @@ class Monitor:
         self.data = data
     
     def update(self):
-        print('update ',self.data[-1,0])
+        # print('update ',self.data[-1,0])
 
         for i in range(self.nrow):
             self.line_list[i].set_data( self.data[-self.ndata:,0], self.data[-self.ndata:,i+1])

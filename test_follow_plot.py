@@ -5,15 +5,19 @@ import matplotlib.pyplot as plt
 plt.ion()
 nrow = 6
 ndata = 1000
-dt = 0.01
-t = 0.0
-
+dt = 0.05
+t_wait = dt
+t=0.0
 data = np.zeros([ndata,nrow+1],float)
 
 moni = Monitor(nrow,ndata)
 
+t_1 = time.time()
+
 try:
     while True:
+        t_0 = time.time()
+        
         rng = np.random.normal(loc=0.0,scale=0.1,size=nrow)
         data_row = np.zeros(nrow+1)
         data_row[0] = dt
@@ -21,7 +25,11 @@ try:
         data = np.append(data,np.array([data[-1,:]+data_row]),axis=0)
         moni.set_data(data)
         moni.update()
-        time.sleep(dt)
+        t_wait = dt -(time.time()-t_0)
+        print(t_wait)
+        if t_wait > 0.0:
+            time.sleep(t_wait)
+
         t +=dt
 except KeyboardInterrupt:
     pass
