@@ -4,8 +4,8 @@ from sources.data_analysis_tools import *
 import matplotlib.pyplot as plt
 plt.ion()
 nrow = 6
-ndata = 1000
-dt = 0.05
+ndata = 200
+dt = 0.025
 t_wait = dt
 t=0.0
 data = np.zeros([ndata,nrow+1],float)

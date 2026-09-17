@@ -4,6 +4,8 @@ from datetime import datetime
 import matplotlib
 matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as axes3d
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
 
 def read_file(filename,last_n_lines=-1):
     time_format = "%Y-%m-%d %H:%M:%S.%f"
@@ -32,23 +34,6 @@ def read_file(filename,last_n_lines=-1):
         data.append(row)
     return np.array(t),np.array(data)
 
-def make_patch_cube(L,B,H):
-    vert = np.array([[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,1,1],[1,1,1],[1,0,1],[0,0,1]],float)
-    vert[:,0] *=L
-    vert[:,1] *=B
-    vert[:,2] *=H
-    
-    x  = vert[:,0]
-    y  = vert[:,1]
-    z  = vert[:,2]
-    
-    elem = [[0,1,2,3],[0,1,6,7],[4,5,6,7]]
-    
-    tupleList = list(zip(x, y, z))
-
-    poly3d = [[tupleList[elem[ix][iy]] for iy in range(len(elem[0]))] for ix in range(len(elem))]
-
-    return poly3d
     
 def make_cube(L,B,H):
     vert = np.array([[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,1,1],[1,1,1],[1,0,1],[0,0,1]],float)
@@ -58,6 +43,32 @@ def make_cube(L,B,H):
    
     elem = [[0,1,2,3],[0,1,6,7],[1,2,5,6],[2,3,4,5],[3,0,7,4],[4,5,6,7]]
 
+    return vert.T,elem
+
+def make_ship(L,B,H):
+    B2 = B/2
+    f1 = 0.8
+    f2 = 0.6
+    f3 = 0.8
+    f4 = 0.6
+
+    vert = np.array([[0,0,0],\
+                     [0,0,H],\
+                     [0,B2,H],\
+                     [0,B2*f1,H*(1-f1)],\
+                     [L*f2,0,H],\
+                     [L*f2,B2,H],\
+                     [L*f2,B2*f1,H*(1-f1)],\
+                     [L*f2,0,0],\
+                     [,,],\
+                    #  [,,],\
+    ])
+
+    elem = [[0,1,2,3],\
+            [1,4,5,2],\
+            [2,5,6,3],\
+            [3,6,7,0],\
+    ]
     return vert.T,elem
 
 def transformation(points_old,x_vec,M):
@@ -99,16 +110,32 @@ class cad_object:
         self.vert = points
         self.elem = elements
         
-    def set_pose(self,x_vec,M):
+    def set_pose(self,x_vec):
         self.x_vec = x_vec
-        self.M = M
         
     def apply_pose(self):
         self.vert = transformation(self.vert0, self.x_vec, self.M)
         
     def get(self):
         return self.vert, self.elem
-        
+    
+    def get_bbox(self):
+        return [np.min(self.vert0[:,0]),
+                np.max(self.vert0[:,0]),
+                np.min(self.vert0[:,1]),
+                np.max(self.vert0[:,1]),
+                np.min(self.vert0[:,2]),
+                np.max(self.vert0[:,2])]
+
+    def set_center(self,x,y,z):
+        self.M[:,0] = [x,y,z]
+
+    def set_center_bbox(self):
+        bbox = self.get_bbox()
+        self.set_center((bbox[0]+bbox[1])*0.5,
+                        (bbox[2]+bbox[3])*0.5,
+                        (bbox[4]+bbox[5])*0.5)
+
     def get_poly3d(self):
         x  = self.vert[0,:]
         y  = self.vert[1,:]
@@ -167,6 +194,51 @@ class Monitor:
         
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+
+class Monitor3D:
+    def __init__(self,cad):
+        self.flag_body = True
+        self.flag_triad = True
+        self.flag_trace = True
+
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        # self.fig, self.ax = plt.subplots(1,1,facecolor='w',frameon=False,projection='3d')
+        dpi = self.fig.get_dpi()
+        self.fig.set_size_inches(600/dpi,600/dpi)
+        self.fig.canvas.manager.window.move(900, 100)
+        self.ax.axis('equal')
+        self.cad = cad
+        self.initialize()
+
+    def initialize(self):
+        if self.flag_body:
+            colors = np.linspace(0,100,6)
+            cad_poly3d = self.cad.get_poly3d()
+            self.patch3D = Poly3DCollection(cad_poly3d, cmap=matplotlib.cm.jet, edgecolors='k',  linewidths=2, alpha=0.50)
+            self.patch3D.set_array(colors)
+            self.ax.add_collection3d(self.patch3D)
+
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+        plt.draw()
+
+    def set_pose(self,x,y,z,phi,psi,chi):
+        self.x_vec = np.array([[x,y,z,phi,psi,chi]],float).T
+        self.cad.set_pose(self.x_vec)
+        
+    def update(self):
+        
+        self.cad.apply_pose()
+        
+        self.patch3D.set_verts(self.cad.get_poly3d())
+
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+        self.ax.axis('equal')
+        plt.draw()
+        plt.show()
+
 
 def moving_average(data,win=3):
     return np.convolve(data, np.ones(win), 'valid') / win
